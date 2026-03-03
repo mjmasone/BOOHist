@@ -647,13 +647,9 @@ function SponsorOrQuote({ quote }) {
 
 function SupportBlock() {
   return (
-    <div style={{ width:"100%", padding:"22px 24px", textAlign:"center", background:C.surface, border:"1px solid "+C.border, borderRadius:10, margin:"20px 0" }}>
-      <div style={{ fontSize:9, letterSpacing:4, color:C.muted, textTransform:"uppercase", fontFamily:"Georgia,serif", marginBottom:8 }}>{SUPPORT.label}</div>
-      <div style={{ fontSize:11, color:C.muted, fontFamily:"Georgia,serif", lineHeight:1.7, marginBottom:16 }}>
-        Suggested donation {SUPPORT.suggestedAmount} via {SUPPORT.platform}.
-      </div>
-      <a href={SUPPORT.url} target="_blank" rel="noopener noreferrer" style={{ display:"inline-flex", alignItems:"center", gap:8, padding:"10px 22px", background:C.blue+"18", border:"1px solid "+C.blue+"77", borderRadius:8, color:"#6BC5F0", fontSize:12, fontWeight:600, fontFamily:"Georgia,serif", letterSpacing:0.5, textDecoration:"none" }}>
-        <span>💙</span> {SUPPORT.platform} · {SUPPORT.handle}
+    <div style={{ width:"100%", padding:"10px 16px", textAlign:"center", borderTop:"1px solid "+C.border, marginTop:8 }}>
+      <a href={SUPPORT.url} target="_blank" rel="noopener noreferrer" style={{ fontSize:11, color:C.muted, fontFamily:"Georgia,serif", textDecoration:"none" }}>
+        💙 {SUPPORT.label} · {SUPPORT.platform} {SUPPORT.handle} · {SUPPORT.suggestedAmount}
       </a>
     </div>
   );
@@ -661,13 +657,9 @@ function SupportBlock() {
 
 function PremiumBlock({ onUpgrade }) {
   return (
-    <div style={{ width:"100%", padding:"22px 24px", textAlign:"center", background:C.goldDim, border:"1px solid "+C.gold+"33", borderRadius:10, margin:"20px 0" }}>
-      <div style={{ fontSize:10, color:C.gold, letterSpacing:3, fontFamily:"Georgia,serif", marginBottom:10 }}>★ PREMIUM</div>
-      <div style={{ fontSize:11, color:C.muted, fontFamily:"Georgia,serif", lineHeight:1.8, marginBottom:16 }}>
-        Unlock Hard &amp; Expert cards.<br />Remove ads. Get printable game sheets.
-      </div>
-      <button onClick={onUpgrade} style={{ padding:"10px 28px", background:C.gold+"22", border:"1px solid "+C.gold, borderRadius:8, color:C.goldLight, fontSize:12, fontWeight:600, cursor:"pointer", fontFamily:"Georgia,serif", letterSpacing:1 }}>
-        Upgrade to Premium
+    <div style={{ width:"100%", padding:"10px 16px", textAlign:"center", borderTop:"1px solid "+C.border }}>
+      <button onClick={onUpgrade} style={{ background:"transparent", border:"none", color:C.gold, fontSize:11, cursor:"pointer", fontFamily:"Georgia,serif", letterSpacing:0.5 }}>
+        ★ Upgrade to Premium — unlock Hard &amp; Expert cards
       </button>
     </div>
   );
