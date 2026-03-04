@@ -18,7 +18,7 @@ const SPONSOR = {
 // ─── SUPPORT / DONATE BLOCK ───────────────────────────────────────────────────
 // Update handle, url, and suggestedAmount to change the donation target.
 const SUPPORT = {
-  label: "Support the Project",
+  label: "Donate to support free users",
   platform: "Venmo",
   handle: "@fiddyfiddy",
   url: "https://venmo.com/fiddyfiddy",
@@ -311,11 +311,11 @@ function fetchBooWords(word) {
 // DESIGN TOKENS
 // ─────────────────────────────────────────────────────────────────────────────
 const C = {
-  bg:"#0A090D", surface:"#111018", border:"#1C1A28", surfaceHigh:"#16131F",
-  gold:"#C9A84C", goldLight:"#E8C96A", goldDim:"#C9A84C18",
-  cream:"#F0E6D3", muted:"#8A879A", dim:"#2E2A40", white:"#FAFAFA",
-  red:"#A93226", green:"#1E8449", greenLight:"#58D68D",
-  blue:"#3D95CE", footerText:"#9B98AD",
+  bg:"#0D0C13", surface:"#161422", border:"#252236", surfaceHigh:"#1C1A2C",
+  gold:"#D4AE52", goldLight:"#F0D46E", goldDim:"#D4AE5218",
+  cream:"#F7EDDA", muted:"#B8B4CC", dim:"#3D3858", white:"#FAFAFA",
+  red:"#C0392B", green:"#1E8449", greenLight:"#6EE5A0",
+  blue:"#4AAEE0", footerText:"#B0ADBE",
 };
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -344,13 +344,13 @@ function SponsorOrQuote({ quote }) {
 
 function SupportBlock() {
   return (
-    <div style={{ width:"100%", padding:"22px 24px", textAlign:"center", background:C.surface, border:"1px solid "+C.border, borderRadius:10, margin:"20px 0" }}>
+    <div style={{ width:"100%", padding:"22px 24px", textAlign:"center", background:C.surface, border:"1px solid "+C.border, borderRadius:10, margin:"12px 0" }}>
       <div style={{ fontSize:9, letterSpacing:4, color:C.muted, textTransform:"uppercase", fontFamily:"Georgia,serif", marginBottom:8 }}>{SUPPORT.label}</div>
       <div style={{ fontSize:11, color:C.muted, fontFamily:"Georgia,serif", lineHeight:1.7, marginBottom:16 }}>
-        Suggested donation {SUPPORT.suggestedAmount} via {SUPPORT.platform}.
+        Suggested donation {SUPPORT.suggestedAmount}
       </div>
       <a href={SUPPORT.url} target="_blank" rel="noopener noreferrer" style={{ display:"inline-flex", alignItems:"center", gap:8, padding:"10px 22px", background:C.blue+"18", border:"1px solid "+C.blue+"77", borderRadius:8, color:"#6BC5F0", fontSize:12, fontWeight:600, fontFamily:"Georgia,serif", letterSpacing:0.5, textDecoration:"none" }}>
-        <span>💙</span> {SUPPORT.platform} · {SUPPORT.handle}
+        {SUPPORT.platform} · {SUPPORT.handle}
       </a>
     </div>
   );
@@ -403,7 +403,7 @@ function Footer({ onHowToPlay, onAdminTap }) {
     else tapTimeout.current = setTimeout(() => setTaps(0), 2000);
   };
   return (
-    <div style={{ width:"100%", borderTop:"1px solid "+C.dim, marginTop:48, paddingTop:20, textAlign:"center", display:"flex", flexDirection:"column", gap:10 }}>
+    <div style={{ width:"100%", borderTop:"1px solid "+C.dim, marginTop:24, paddingTop:20, textAlign:"center", display:"flex", flexDirection:"column", gap:10 }}>
       <button onClick={onHowToPlay} style={{ background:"transparent", border:"none", color:C.footerText, fontSize:12, cursor:"pointer", fontFamily:"Georgia,serif", letterSpacing:1, textDecoration:"underline" }}>
         How to Play
       </button>
@@ -664,7 +664,7 @@ function DailyCard({ card, choices, onPick, onHint, timerPct, urgent, cardNum, t
       <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:14 }}>
         <span style={{ fontSize:11, color:C.muted, fontFamily:"Georgia,serif" }}>{cardNum} / {total}</span>
         <div style={{ flex:1, height:2, background:C.dim, margin:"0 14px", borderRadius:1, overflow:"hidden" }}>
-          <div style={{ height:"100%", width:timerPct+"%", background:urgent?C.red:"linear-gradient(90deg,"+C.gold+","+C.goldLight+")", borderRadius:1, transition:"width 1s linear", animation:urgent?"pulse 0.7s infinite":"none" }} />
+          <div style={{ height:"100%", width:timerPct+"%", background:urgent?"#E74C3C":"linear-gradient(90deg,#D4AE52,#F5D76E)", borderRadius:1, transition:"width 1s linear", animation:urgent?"pulse 0.7s infinite":"none" }} />
         </div>
         <span style={{ fontSize:11, color:urgent?C.red:C.muted, fontFamily:"monospace" }}>{Math.ceil(timerPct*0.01*60)}s</span>
       </div>
@@ -675,7 +675,7 @@ function DailyCard({ card, choices, onPick, onHint, timerPct, urgent, cardNum, t
           {card.booWords ? (
             <div style={{ display:"flex", flexDirection:"column", gap:6 }}>
               {card.booWords.map((w,i)=>(
-                <div key={i} style={{ display:"flex", alignItems:"center", gap:10, padding:"8px 13px", background:C.red+"0A", border:"1px solid "+C.red+"1E", borderRadius:7, fontFamily:"Georgia,serif", fontSize:16, color:"#C9A8A0", letterSpacing:0.3 }}>
+                <div key={i} style={{ display:"flex", alignItems:"center", gap:10, padding:"9px 14px", background:C.red+"14", border:"1px solid "+C.red+"30", borderRadius:7, fontFamily:"Georgia,serif", fontSize:19, color:"#DDB8B0", letterSpacing:0.3 }}>
                   <span style={{ color:C.red+"55", fontSize:9 }}>⬥</span>
                   <span aria-label={w}>
                     <span aria-hidden="true" style={{ fontSize:0, userSelect:"none", position:"absolute", opacity:0 }}>{injectChaff(w)}</span>
@@ -698,7 +698,7 @@ function DailyCard({ card, choices, onPick, onHint, timerPct, urgent, cardNum, t
               {choices.map((choice,i)=>{
                 const eliminated = hintEliminatedIdx===i;
                 return (
-                  <button key={i} onClick={()=>!eliminated&&onPick(choice)} disabled={eliminated} style={{ padding:"13px 16px", background:eliminated?C.dim+"33":"transparent", border:"1px solid "+(eliminated?C.dim:C.gold+"44"), borderRadius:10, color:eliminated?C.dim:C.cream, fontFamily:"Georgia,serif", fontSize:18, fontWeight:700, cursor:eliminated?"not-allowed":"pointer", textAlign:"center", letterSpacing:0.5, transition:"all 0.15s", opacity:eliminated?0.3:1, textDecoration:eliminated?"line-through":"none" }}
+                  <button key={i} onClick={()=>!eliminated&&onPick(choice)} disabled={eliminated} style={{ padding:"13px 16px", background:eliminated?C.dim+"33":"transparent", border:"1px solid "+(eliminated?C.dim:C.gold+"44"), borderRadius:10, color:eliminated?C.dim:C.cream, fontFamily:"Georgia,serif", fontSize:20, fontWeight:700, cursor:eliminated?"not-allowed":"pointer", textAlign:"center", letterSpacing:0.5, transition:"all 0.15s", opacity:eliminated?0.3:1, textDecoration:eliminated?"line-through":"none" }}
                     onMouseEnter={e=>{ if(!eliminated){e.currentTarget.style.background=C.gold+"18";e.currentTarget.style.borderColor=C.gold+"88";}}}
                     onMouseLeave={e=>{ if(!eliminated){e.currentTarget.style.background="transparent";e.currentTarget.style.borderColor=C.gold+"44";}}}
                   >{choice}</button>
@@ -726,7 +726,7 @@ function CustomCard({ card, onGot, onSkip, timerPct, urgent, cardNum, total, hig
       <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:14 }}>
         <span style={{ fontSize:11, color:C.muted, fontFamily:"Georgia,serif" }}>{cardNum} / {total}</span>
         <div style={{ flex:1, height:2, background:C.dim, margin:"0 14px", borderRadius:1, overflow:"hidden" }}>
-          <div style={{ height:"100%", width:timerPct+"%", background:urgent?C.red:"linear-gradient(90deg,"+C.gold+","+C.goldLight+")", borderRadius:1, transition:"width 1s linear", animation:urgent?"pulse 0.7s infinite":"none" }} />
+          <div style={{ height:"100%", width:timerPct+"%", background:urgent?"#E74C3C":"linear-gradient(90deg,#D4AE52,#F5D76E)", borderRadius:1, transition:"width 1s linear", animation:urgent?"pulse 0.7s infinite":"none" }} />
         </div>
         <span style={{ fontSize:11, color:urgent?C.red:C.muted, fontFamily:"monospace" }}>{Math.ceil(timerPct*0.01*60)}s</span>
       </div>
@@ -935,16 +935,11 @@ export default function BooHist() {
       {showPremiumModal && fingerprint && <PremiumModal fingerprint={fingerprint} onClose={()=>setShowPremiumModal(false)} onSuccess={()=>{ setShowPremiumModal(false); }} />}
       {showAdmin && <AdminPanel onClose={()=>setShowAdmin(false)} />}
 
-      <div style={{ maxWidth:560, margin:"0 auto", padding:"40px 20px 20px", display:"flex", flexDirection:"column", alignItems:"center" }}>
+      <div style={{ maxWidth:560, margin:"0 auto", padding:"16px 20px 20px", display:"flex", flexDirection:"column", alignItems:"center" }}>
 
         {/* MASTHEAD */}
-        <div style={{ textAlign:"center", marginBottom:32, width:"100%", animation:"fadeUp 0.5s ease" }}>
-          <div style={{ display:"inline-flex", alignItems:"center", gap:10, padding:"4px 18px", border:"1px solid "+C.gold+"22", borderRadius:3, marginBottom:14 }}>
-            <div style={{ height:1, width:14, background:C.gold+"44" }} />
-            <span style={{ fontSize:8, letterSpacing:5, color:C.gold, opacity:0.55, textTransform:"uppercase" }}>Word Game</span>
-            <div style={{ height:1, width:14, background:C.gold+"44" }} />
-          </div>
-          <div style={{ fontSize:52, fontWeight:700, lineHeight:1, letterSpacing:4 }}>
+        <div style={{ textAlign:"center", marginBottom:16, width:"100%", animation:"fadeUp 0.5s ease" }}>
+          <div style={{ fontSize:46, fontWeight:700, lineHeight:1, letterSpacing:4 }}>
             <span style={{ color:C.gold }}>BOO</span><span style={{ color:C.cream }}>Hist</span>
           </div>
           {isPremium && <div style={{ fontSize:9, color:C.greenLight, letterSpacing:3, marginTop:8, fontFamily:"Georgia,serif" }}>★ PREMIUM</div>}
@@ -959,8 +954,8 @@ export default function BooHist() {
               onMouseLeave={e=>{e.currentTarget.style.background=C.gold+"0F";e.currentTarget.style.borderColor=C.gold+"55";}}>
               <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start" }}>
                 <div>
-                  <div style={{ fontSize:9, letterSpacing:4, color:C.gold, textTransform:"uppercase", marginBottom:8 }}>📅 Daily Challenge</div>
-                  <div style={{ fontSize:18, fontWeight:700, color:C.cream }}>Today's 10 Cards</div>
+                  <div style={{ fontSize:9, letterSpacing:4, color:C.gold, textTransform:"uppercase", marginBottom:8 }}>📅 Today's Challenge</div>
+                  <div style={{ fontSize:20, fontWeight:700, color:C.cream }}>Today's 10</div>
                   <div style={{ fontSize:11, color:C.muted, marginTop:6, lineHeight:1.6 }}>Guess the hidden word from its BOOwords.<br />Same cards for everyone. Resets at midnight.</div>
                 </div>
                 <div style={{ fontSize:22, opacity:0.5, marginLeft:12 }}>→</div>
@@ -971,8 +966,7 @@ export default function BooHist() {
               onMouseLeave={e=>{e.currentTarget.style.borderColor=C.border;}}>
               <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start" }}>
                 <div>
-                  <div style={{ fontSize:9, letterSpacing:4, color:C.muted, textTransform:"uppercase", marginBottom:8 }}>👥 Custom Game</div>
-                  <div style={{ fontSize:18, fontWeight:700, color:C.cream }}>Play in Pairs</div>
+                  <div style={{ fontSize:20, fontWeight:700, color:C.cream }}>Multi-Player</div>
                   <div style={{ fontSize:11, color:C.muted, marginTop:6, lineHeight:1.6 }}>Reader gives clues, partner guesses.<br />Choose eras, categories &amp; difficulty.</div>
                 </div>
                 <div style={{ fontSize:22, opacity:0.3, marginLeft:12 }}>→</div>
