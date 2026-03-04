@@ -1267,7 +1267,3 @@ const SEED_WORDS = [
     {word:"Famine",categories:["History","Science"],eras:["All Time"],difficulty:"Easy"},
     {word:"Empire",categories:["History","Politics"],eras:["All Time"],difficulty:"Easy"},
   ];
-  
-  
-];
-export default SEED_WORDS;
