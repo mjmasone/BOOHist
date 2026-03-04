@@ -111,9 +111,9 @@ async function generateFingerprint() {
       ctx.fillStyle = "#f60";
       ctx.fillRect(125, 1, 62, 20);
       ctx.fillStyle = "#069";
-      ctx.fillText("BOOHist🎯", 2, 15);
+      ctx.fillText("BOOHist", 2, 15);
       ctx.fillStyle = "rgba(102,204,0,0.7)";
-      ctx.fillText("BOOHist🎯", 4, 17);
+      ctx.fillText("BOOHist", 4, 17);
       signals.push(canvas.toDataURL());
     } catch {}
 
@@ -658,20 +658,19 @@ function ShareModal({ result, mode, onClose }) {
 // ─────────────────────────────────────────────────────────────────────────────
 // DAILY CARD
 // ─────────────────────────────────────────────────────────────────────────────
-function DailyCard({ card, choices, onPick, onHint, timerPct, urgent, cardNum, total, hintEliminatedIdx, flashWrong }) {
+function DailyCard({ card, choices, onPick, onHint, timerPct, urgent, cardNum, total, hintEliminatedIdx, flashWrong, onHowToPlay }) {
   return (
     <div style={{ width:"100%", maxWidth:420, animation:"cardIn 0.3s cubic-bezier(0.34,1.4,0.64,1)" }}>
       <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:14 }}>
         <span style={{ fontSize:11, color:C.muted, fontFamily:"Georgia,serif" }}>{cardNum} / {total}</span>
-        <div style={{ flex:1, height:2, background:C.dim, margin:"0 14px", borderRadius:1, overflow:"hidden" }}>
-          <div style={{ height:"100%", width:timerPct+"%", background:urgent?"#E74C3C":"linear-gradient(90deg,#D4AE52,#F5D76E)", borderRadius:1, transition:"width 1s linear", animation:urgent?"pulse 0.7s infinite":"none" }} />
+        <div style={{ flex:1, height:6, background:C.dim, margin:"0 14px", borderRadius:3, overflow:"hidden" }}>
+          <div style={{ height:"100%", width:timerPct+"%", background:urgent?"#E74C3C":"linear-gradient(90deg,#D4AE52,#F5D76E)", borderRadius:3, transition:"width 1s linear", animation:urgent?"pulse 0.7s infinite":"none" }} />
         </div>
         <span style={{ fontSize:11, color:urgent?C.red:C.muted, fontFamily:"monospace" }}>{Math.ceil(timerPct*0.01*60)}s</span>
       </div>
       <div style={{ background:C.surface, border:"1px solid "+(flashWrong?C.red:C.border), borderRadius:14, overflow:"hidden", boxShadow:"0 16px 48px rgba(0,0,0,0.7)", transition:"border-color 0.1s" }}>
         <div style={{ height:2, background:"linear-gradient(90deg,transparent,"+C.gold+",transparent)" }} />
         <div style={{ padding:"20px 20px 16px" }}>
-          <div style={{ fontSize:8, letterSpacing:3, color:C.red, opacity:0.7, fontFamily:"Georgia,serif", marginBottom:10, textTransform:"uppercase" }}>BOOwords — what is being described?</div>
           {card.booWords ? (
             <div style={{ display:"flex", flexDirection:"column", gap:6 }}>
               {card.booWords.map((w,i)=>(
@@ -709,9 +708,12 @@ function DailyCard({ card, choices, onPick, onHint, timerPct, urgent, cardNum, t
             </div>
             {hintEliminatedIdx===null && (
               <button onClick={onHint} style={{ width:"100%", marginTop:12, padding:"9px", background:C.gold+"0F", border:"1px solid "+C.gold+"33", borderRadius:8, color:C.gold, fontSize:11, cursor:"pointer", fontFamily:"Georgia,serif", letterSpacing:0.5 }}>
-                💡 Hint — eliminate a wrong answer (−0.5 pts)
+                HINT  —  −0.5 pts
               </button>
             )}
+            <div style={{ textAlign:"center", marginTop:14 }}>
+              <button onClick={onHowToPlay} style={{ background:"transparent", border:"none", color:C.muted, fontSize:10, cursor:"pointer", fontFamily:"Georgia,serif", letterSpacing:1, textDecoration:"underline" }}>How to Play</button>
+            </div>
           </div>
         )}
       </div>
@@ -722,13 +724,13 @@ function DailyCard({ card, choices, onPick, onHint, timerPct, urgent, cardNum, t
 // ─────────────────────────────────────────────────────────────────────────────
 // CUSTOM CARD
 // ─────────────────────────────────────────────────────────────────────────────
-function CustomCard({ card, onGot, onSkip, timerPct, urgent, cardNum, total, highlightedBooIdx, onHighlightBoo }) {
+function CustomCard({ card, onGot, onSkip, timerPct, urgent, cardNum, total, highlightedBooIdx, onHighlightBoo, onHowToPlay }) {
   return (
     <div style={{ width:"100%", maxWidth:420, animation:"cardIn 0.3s cubic-bezier(0.34,1.4,0.64,1)" }}>
       <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:14 }}>
         <span style={{ fontSize:11, color:C.muted, fontFamily:"Georgia,serif" }}>{cardNum} / {total}</span>
-        <div style={{ flex:1, height:2, background:C.dim, margin:"0 14px", borderRadius:1, overflow:"hidden" }}>
-          <div style={{ height:"100%", width:timerPct+"%", background:urgent?"#E74C3C":"linear-gradient(90deg,#D4AE52,#F5D76E)", borderRadius:1, transition:"width 1s linear", animation:urgent?"pulse 0.7s infinite":"none" }} />
+        <div style={{ flex:1, height:6, background:C.dim, margin:"0 14px", borderRadius:3, overflow:"hidden" }}>
+          <div style={{ height:"100%", width:timerPct+"%", background:urgent?"#E74C3C":"linear-gradient(90deg,#D4AE52,#F5D76E)", borderRadius:3, transition:"width 1s linear", animation:urgent?"pulse 0.7s infinite":"none" }} />
         </div>
         <span style={{ fontSize:11, color:urgent?C.red:C.muted, fontFamily:"monospace" }}>{Math.ceil(timerPct*0.01*60)}s</span>
       </div>
@@ -746,7 +748,7 @@ function CustomCard({ card, onGot, onSkip, timerPct, urgent, cardNum, total, hig
         <div style={{ padding:"16px 20px 22px" }}>
           <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:4 }}>
             <div style={{ fontSize:8, letterSpacing:3, color:C.red, opacity:0.7, fontFamily:"Georgia,serif", textTransform:"uppercase" }}>BOOwords</div>
-            <div style={{ fontSize:9, color:C.gold, fontFamily:"Georgia,serif", fontStyle:"italic" }}>💡 Tap to use as hint</div>
+            <div style={{ fontSize:9, color:C.gold, fontFamily:"Georgia,serif", fontStyle:"italic" }}>Tap to use as hint</div>
           </div>
           {card.booWords ? (
             <div style={{ display:"flex", flexDirection:"column", gap:6 }}>
@@ -769,7 +771,10 @@ function CustomCard({ card, onGot, onSkip, timerPct, urgent, cardNum, total, hig
           )}
         </div>
       </div>
-      <div style={{ display:"flex", gap:8, marginTop:14 }}>
+      <div style={{ textAlign:"center", marginTop:10, marginBottom:2 }}>
+        <button onClick={onHowToPlay} style={{ background:"transparent", border:"none", color:C.muted, fontSize:10, cursor:"pointer", fontFamily:"Georgia,serif", letterSpacing:1, textDecoration:"underline" }}>How to Play</button>
+      </div>
+      <div style={{ display:"flex", gap:8, marginTop:8 }}>
         <button onClick={onSkip} style={{ flex:1, padding:"13px 8px", background:"transparent", border:"1px solid "+C.dim, borderRadius:9, color:C.muted, fontSize:11, cursor:"pointer", fontFamily:"Georgia,serif", transition:"all 0.15s" }}>Skip</button>
         <button onClick={onGot} style={{ flex:2, padding:"13px 8px", background:C.green+"18", border:"1px solid "+C.green+"55", borderRadius:9, color:C.greenLight, fontSize:11, cursor:"pointer", fontFamily:"Georgia,serif", boxShadow:"0 0 16px "+C.green+"1A" }}>✓ Got It</button>
       </div>
@@ -940,11 +945,22 @@ export default function BooHist() {
       <div style={{ maxWidth:560, margin:"0 auto", padding:"16px 20px 20px", display:"flex", flexDirection:"column", alignItems:"center" }}>
 
         {/* MASTHEAD */}
-        <div style={{ textAlign:"center", marginBottom:16, width:"100%", animation:"fadeUp 0.5s ease" }}>
-          <div style={{ fontSize:46, fontWeight:700, lineHeight:1, letterSpacing:4 }}>
-            <span style={{ color:C.gold }}>BOO</span><span style={{ color:C.cream }}>Hist</span>
-          </div>
-          {isPremium && <div style={{ fontSize:9, color:C.greenLight, letterSpacing:3, marginTop:8, fontFamily:"Georgia,serif" }}>★ PREMIUM</div>}
+        <div style={{ textAlign:"center", marginBottom:screen==="game"?8:16, width:"100%", animation:"fadeUp 0.5s ease" }}>
+          {screen==="game" ? (
+            <div style={{ display:"flex", alignItems:"center", justifyContent:"center", gap:10 }}>
+              <div style={{ fontSize:16, fontWeight:700, letterSpacing:3 }}>
+                <span style={{ color:C.gold }}>BOO</span><span style={{ color:C.cream }}>Hist</span>
+              </div>
+              <span style={{ fontSize:9, color:C.muted, letterSpacing:2, fontFamily:"Georgia,serif", textTransform:"uppercase" }}>{mode==="daily"?"Daily Challenge":"Multi-Player"}</span>
+            </div>
+          ) : (
+            <>
+              <div style={{ fontSize:46, fontWeight:700, lineHeight:1, letterSpacing:4 }}>
+                <span style={{ color:C.gold }}>BOO</span><span style={{ color:C.cream }}>Hist</span>
+              </div>
+              {isPremium && <div style={{ fontSize:9, color:C.greenLight, letterSpacing:3, marginTop:8, fontFamily:"Georgia,serif" }}>★ PREMIUM</div>}
+            </>
+          )}
         </div>
 
         {/* HOME */}
@@ -956,7 +972,7 @@ export default function BooHist() {
               onMouseLeave={e=>{e.currentTarget.style.background=C.gold+"0F";e.currentTarget.style.borderColor=C.gold+"55";}}>
               <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start" }}>
                 <div>
-                  <div style={{ fontSize:9, letterSpacing:4, color:C.gold, textTransform:"uppercase", marginBottom:8 }}>📅 Today's Challenge</div>
+                  <div style={{ fontSize:9, letterSpacing:4, color:C.gold, textTransform:"uppercase", marginBottom:8 }}>Today's Challenge</div>
                   <div style={{ fontSize:20, fontWeight:700, color:C.cream }}>Today's 10</div>
                   <div style={{ fontSize:11, color:C.muted, marginTop:6, lineHeight:1.6 }}>Guess the hidden word from its BOOwords.<br />Same cards for everyone. Resets at midnight.</div>
                 </div>
@@ -1038,10 +1054,8 @@ export default function BooHist() {
         {/* GAME */}
         {screen==="game" && card && (
           <div style={{ display:"flex", flexDirection:"column", alignItems:"center", width:"100%", animation:"fadeUp 0.3s ease" }}>
-            <div style={{ display:"flex", justifyContent:"space-between", width:"100%", maxWidth:420, marginBottom:14 }}>
-              <span style={{ fontSize:11, color:C.greenLight }}>{score%1===0?score:score.toFixed(1)} pts</span>
-              <span style={{ fontSize:10, color:C.muted }}>{mode==="daily"?"📅 Daily":"👥 Custom"}</span>
-              <span style={{ fontSize:11, color:hintsUsed>0?C.gold:C.muted }}>💡 {hintsUsed}</span>
+            <div style={{ display:"flex", justifyContent:"flex-end", width:"100%", maxWidth:420, marginBottom:14 }}>
+              <span style={{ fontSize:11, color:hintsUsed>0?C.gold:C.muted }}>Hints: {hintsUsed}</span>
             </div>
             {!started ? (
               <div style={{ textAlign:"center", maxWidth:420, width:"100%" }}>
@@ -1055,9 +1069,9 @@ export default function BooHist() {
                 <button onClick={handleStart} style={{ width:"100%", padding:"17px", background:C.gold+"18", border:"1px solid "+C.gold+"77", borderRadius:9, color:C.goldLight, fontSize:13, fontWeight:600, cursor:"pointer", fontFamily:"Georgia,serif", letterSpacing:2 }}>Start the Clock</button>
               </div>
             ) : mode==="daily" ? (
-              <DailyCard key={cardIdx} card={card} choices={choices} onPick={handlePick} onHint={handleDailyHint} timerPct={timerPct} urgent={urgent} cardNum={cardIdx+1} total={deck.length} hintEliminatedIdx={hintEliminatedIdx} flashWrong={flashWrong} />
+              <DailyCard key={cardIdx} card={card} choices={choices} onPick={handlePick} onHint={handleDailyHint} timerPct={timerPct} urgent={urgent} cardNum={cardIdx+1} total={deck.length} hintEliminatedIdx={hintEliminatedIdx} flashWrong={flashWrong} onHowToPlay={()=>setShowInstructions(true)} />
             ) : (
-              <CustomCard card={card} onGot={handleGot} onSkip={handleSkip} timerPct={timerPct} urgent={urgent} cardNum={cardIdx+1} total={deck.length} highlightedBooIdx={highlightedBooIdx} onHighlightBoo={handleHighlightBoo} />
+              <CustomCard card={card} onGot={handleGot} onSkip={handleSkip} timerPct={timerPct} urgent={urgent} cardNum={cardIdx+1} total={deck.length} highlightedBooIdx={highlightedBooIdx} onHighlightBoo={handleHighlightBoo} onHowToPlay={()=>setShowInstructions(true)} />
             )}
           </div>
         )}
