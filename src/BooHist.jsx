@@ -247,34 +247,88 @@ function getDailyPool() {
 
 // ─────────────────────────────────────────────────────────────────────────────
 // DECOY SELECTION
-// Tier 1: same era AND same category  (closest — lower 1/3 of BOOword distance)
-// Tier 2: same category, different era
-// Tier 3: full bank fallback
+// Scores every candidate on three axes then picks the top 2:
+//
+// #3 — Shared BOOwords: candidates sharing more BOOwords with the target
+//       are more plausibly confusable — scored 0–6.
+//
+// #4 — Type matching: infers person / event / concept from the word string.
+//       A proper name (e.g. "Marie Curie") should only compete against other
+//       proper names, not movements or abstract concepts.
+//
+// #5 — Strict era: ignores the "All Time" catch-all and only rewards a match
+//       on a specific era tag, so Classical Antiquity words beat Modern Era
+//       words even if both carry "All Time".
 // ─────────────────────────────────────────────────────────────────────────────
+function inferType(word) {
+  const tokens = word.trim().split(/\s+/);
+  const articles = new Set(["the","a","an","of","and","in","at","on","for"]);
+  // Words that signal this is an event, era, or movement rather than a person
+  const eventWords = new Set(["battle","war","revolution","age","era","period","empire",
+    "movement","treaty","act","invention","discovery","crisis","plague","famine",
+    "expedition","exploration","reformation","renaissance","enlightenment","depression"]);
+  const lower = word.toLowerCase();
+  if (articles.has(tokens[0].toLowerCase())) return "event";
+  if (tokens.some(t => eventWords.has(t.toLowerCase()))) return "event";
+  // All-caps significant tokens with no event marker = proper name (person or place)
+  const sigTokens = tokens.filter(t => t.length > 1 && !articles.has(t.toLowerCase()));
+  const capCount = sigTokens.filter(t => t[0] === t[0].toUpperCase() && t[0] !== t[0].toLowerCase()).length;
+  if (capCount === sigTokens.length && sigTokens.length > 0) return "person";
+  return "event";
+}
+
+function scoreDecoy(target, candidate) {
+  let score = 0;
+
+  // #3 — shared BOOwords (worth up to 6 pts — highest weight)
+  const targetBoo = new Set((target.booWords || []).map(w => w.toLowerCase()));
+  const sharedBoo = (candidate.booWords || []).filter(w => targetBoo.has(w.toLowerCase())).length;
+  score += sharedBoo * 10;
+
+  // #4 — type match (person vs event vs concept)
+  if (inferType(target.word) === inferType(candidate.word)) score += 8;
+
+  // #5 — specific era match (exclude "All Time" from both sides)
+  const targetEras = target.eras.filter(e => e !== "All Time");
+  const candidateEras = candidate.eras.filter(e => e !== "All Time");
+  const eraMatch = targetEras.some(e => candidateEras.includes(e));
+  if (eraMatch) score += 6;
+  // adjacent eras also get partial credit
+  else {
+    const eraOrder = ["Prehistoric","Ancient Civilizations","Classical Antiquity","Late Antiquity","Medieval Period","The Renaissance","Age of Exploration","The Enlightenment","Industrial Revolution","Modern Era","Postwar Era","Digital Age"];
+    const targetIdx = Math.min(...targetEras.map(e => eraOrder.indexOf(e)).filter(i => i >= 0));
+    const candIdx   = Math.min(...candidateEras.map(e => eraOrder.indexOf(e)).filter(i => i >= 0));
+    const dist = Math.abs(targetIdx - candIdx);
+    if (dist === 1) score += 3;
+    else if (dist === 2) score += 1;
+  }
+
+  // category match (baseline sanity — same domain)
+  if (candidate.categories.some(c => target.categories.includes(c))) score += 4;
+
+  // difficulty proximity (within 1 tier preferred)
+  const diff = {Easy:0, Medium:1, Hard:2, Expert:3};
+  const diffDist = Math.abs((diff[target.difficulty]||0) - (diff[candidate.difficulty]||0));
+  if (diffDist === 0) score += 3;
+  else if (diffDist === 1) score += 1;
+
+  // add small random jitter so ties don't always produce the same pair
+  score += Math.random() * 2;
+
+  return score;
+}
+
 function pickDecoys(target, allWords) {
   const others = allWords.filter(w => w.word !== target.word);
-  const tier1 = others.filter(w =>
-    w.eras.some(e => target.eras.includes(e)) &&
-    w.categories.some(c => target.categories.includes(c))
-  );
-  const tier2 = others.filter(w =>
-    !w.eras.some(e => target.eras.includes(e)) &&
-    w.categories.some(c => target.categories.includes(c))
-  );
-  const tier3 = others.filter(w =>
-    !w.categories.some(c => target.categories.includes(c))
-  );
-  const pool = [
-    ...tier1.sort(() => Math.random() - 0.5),
-    ...tier2.sort(() => Math.random() - 0.5),
-    ...tier3.sort(() => Math.random() - 0.5),
-  ];
-  const picks = [];
-  for (const w of pool) {
-    if (!picks.find(p => p.word === w.word)) picks.push(w);
-    if (picks.length === 2) break;
-  }
-  return picks.map(w => w.word);
+  const scored = others.map(w => ({ w, s: scoreDecoy(target, w) }));
+  scored.sort((a, b) => b.s - a.s);
+  // pick top 2, but never pick a word that is a substring of the target or vice versa
+  const safeWord = w => {
+    const a = w.word.toLowerCase(), b = target.word.toLowerCase();
+    return !a.includes(b) && !b.includes(a);
+  };
+  const picks = scored.filter(({ w }) => safeWord(w)).slice(0, 2).map(({ w }) => w.word);
+  return picks;
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
