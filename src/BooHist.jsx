@@ -608,8 +608,6 @@ async function fetchBooWords(word, categories, eras, difficulty) {
   const booWords = JSON.parse(text);
   await cacheBooWords(word, booWords);
   return booWords;
-}
-
 // ─────────────────────────────────────────────────────────────────────────────
 // DESIGN TOKENS
 // ─────────────────────────────────────────────────────────────────────────────
