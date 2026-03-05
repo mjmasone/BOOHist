@@ -196,8 +196,8 @@ const CATEGORIES = [
   "Literature","Finance","Technology","Film & TV","Geography",
   "Philosophy","Architecture","Fashion","Math",
 ];
-const DIFFICULTIES = ["Easy","Medium","Hard","Expert"];
-const TIMER_OPTIONS = [30,45,60,90,120];
+const DIFFICULTIES = ["All","Easy","Medium","Hard","Expert"];
+const TIMER_OPTIONS = [30,60,120,240,480,960];
 const CARD_COUNTS = [3,5,8,10,15];
 const PREMIUM_DIFFICULTIES = ["Hard","Expert"];
 
@@ -427,7 +427,7 @@ function PremiumBlock({ onUpgrade }) {
 function Pill({ label, selected, onClick, color, locked }) {
   const col = color || C.gold;
   return (
-    <button onClick={onClick} style={{ padding:"6px 13px", borderRadius:6, border:"1px solid "+(selected?col:C.dim), background:selected?col+"18":"transparent", color:selected?col:locked?C.dim:C.muted, fontSize:11, cursor:locked?"not-allowed":"pointer", fontFamily:"Georgia,serif", letterSpacing:0.3, whiteSpace:"nowrap", opacity:locked?0.45:1, display:"inline-flex", alignItems:"center", gap:5, transition:"all 0.15s" }}>
+    <button onClick={onClick} style={{ padding:"10px 18px", borderRadius:6, border:"1px solid "+(selected?col:C.dim), background:selected?col+"18":"transparent", color:selected?col:locked?C.dim:C.muted, fontSize:14, cursor:locked?"not-allowed":"pointer", fontFamily:"Georgia,serif", letterSpacing:0.3, whiteSpace:"nowrap", opacity:locked?0.45:1, display:"inline-flex", alignItems:"center", gap:5, transition:"all 0.15s" }}>
       {locked && <span style={{fontSize:9}}>🔒</span>}{label}
     </button>
   );
@@ -485,7 +485,7 @@ function InstructionsModal({ onClose }) {
           ["✓","Correct scores 1 point and advances to the next card"],
           ["🟥","Wrong scores 0 and advances immediately"],
           ["💡","Hint eliminates one wrong choice — costs 0.5 points"],
-          ["⏱","60 second timer — score as many cards as you can"],
+          ["⏱","5 minute timer — score as many cards as you can"],
           ["📊","Share your result grid after the round"],
         ].map(([i,t])=>(
           <div key={t} style={{ display:"flex", gap:12, marginBottom:10, alignItems:"flex-start" }}>
@@ -720,7 +720,7 @@ function DailyCard({ card, choices, onPick, onHint, timerPct, urgent, cardNum, t
         <div style={{ flex:1, height:6, background:C.dim, margin:"0 14px", borderRadius:3, overflow:"hidden" }}>
           <div style={{ height:"100%", width:timerPct+"%", background:urgent?"#E74C3C":"linear-gradient(90deg,#D4AE52,#F5D76E)", borderRadius:3, transition:"width 1s linear", animation:urgent?"pulse 0.7s infinite":"none" }} />
         </div>
-        <span style={{ fontSize:11, color:urgent?C.red:C.muted, fontFamily:"monospace" }}>{Math.ceil(timerPct*0.01*60)}s</span>
+        <span style={{ fontSize:11, color:urgent?C.red:C.muted, fontFamily:"monospace" }}>{Math.ceil(timerPct*0.01*300)}s</span>
       </div>
       <div style={{ background:C.surface, border:"1px solid "+(flashWrong?C.red:C.border), borderRadius:14, overflow:"hidden", boxShadow:"0 16px 48px rgba(0,0,0,0.7)", transition:"border-color 0.1s" }}>
         <div style={{ height:2, background:"linear-gradient(90deg,transparent,"+C.gold+",transparent)" }} />
@@ -786,7 +786,7 @@ function CustomCard({ card, onGot, onSkip, timerPct, urgent, cardNum, total, hig
         <div style={{ flex:1, height:6, background:C.dim, margin:"0 14px", borderRadius:3, overflow:"hidden" }}>
           <div style={{ height:"100%", width:timerPct+"%", background:urgent?"#E74C3C":"linear-gradient(90deg,#D4AE52,#F5D76E)", borderRadius:3, transition:"width 1s linear", animation:urgent?"pulse 0.7s infinite":"none" }} />
         </div>
-        <span style={{ fontSize:11, color:urgent?C.red:C.muted, fontFamily:"monospace" }}>{Math.ceil(timerPct*0.01*60)}s</span>
+        <span style={{ fontSize:11, color:urgent?C.red:C.muted, fontFamily:"monospace" }}>{Math.ceil(timerPct*0.01*300)}s</span>
       </div>
       <div style={{ background:C.surface, border:"1px solid "+C.border, borderRadius:14, overflow:"hidden", boxShadow:"0 16px 48px rgba(0,0,0,0.7)" }}>
         <div style={{ height:2, background:"linear-gradient(90deg,transparent,"+C.gold+",transparent)" }} />
@@ -851,7 +851,7 @@ export default function BooHist() {
 
   const [config, setConfig] = useState({
     categories:["History","Science"], eras:["All Time","Classical Antiquity"],
-    difficulty:"Medium", cardCount:5, timerSeconds:60,
+    difficulty:"All", cardCount:5, timerSeconds:60,
   });
 
   const [deck, setDeck] = useState([]);
@@ -885,7 +885,7 @@ export default function BooHist() {
   const filteredPool = SEED_WORDS.filter(w=>{
     const catOk = config.categories.includes("All") || w.categories.some(c=>config.categories.includes(c));
     const eraOk = w.eras.some(e=>config.eras.includes(e));
-    const diffOk = (diffRank[w.difficulty]||0)<=(diffRank[config.difficulty]||0);
+    const diffOk = config.difficulty==="All" || (diffRank[w.difficulty]||0)<=(diffRank[config.difficulty]||0);
     const premOk = isPremium || !PREMIUM_DIFFICULTIES.includes(w.difficulty);
     return catOk&&eraOk&&diffOk&&premOk;
   });
@@ -894,7 +894,7 @@ export default function BooHist() {
   const buildDeck = useCallback(async (seedWords, gameMode) => {
     setScreen("loading");
     setLoadingState({done:0,total:seedWords.length});
-    const timerSecs = gameMode==="daily"?60:config.timerSeconds;
+    const timerSecs = gameMode==="daily"?300:config.timerSeconds;
     const built = [];
     for(let i=0;i<seedWords.length;i++){
       const w = seedWords[i];
@@ -923,7 +923,7 @@ export default function BooHist() {
   // ── TIMER ──────────────────────────────────────────────────────
   useEffect(()=>{
     if(screen==="game"&&started){
-      const timerSecs = mode==="daily"?60:config.timerSeconds;
+      const timerSecs = mode==="daily"?300:config.timerSeconds;
       timerRef.current = setInterval(()=>{
         setTimer(t=>{ if(t<=1){clearInterval(timerRef.current);setEndTime(Date.now());setScreen("results");return 0;} return t-1; });
       },1000);
@@ -973,7 +973,7 @@ export default function BooHist() {
 
   const toggle=(arr,val)=>arr.includes(val)?arr.filter(x=>x!==val):[...arr,val];
   const ensure=(arr,val,next)=>next.length?next:arr;
-  const timerSecs = mode==="daily"?60:config.timerSeconds;
+  const timerSecs = mode==="daily"?300:config.timerSeconds;
   const timerPct = (timer/timerSecs)*100;
   const urgent = timer<=8;
   const card = deck[cardIdx];
@@ -1070,7 +1070,7 @@ export default function BooHist() {
             </div>
             <div>
               <Divider label="Difficulty" />
-              <div style={{ display:"flex", gap:7, flexWrap:"wrap" }}>
+              <div style={{ display:"flex", gap:8, flexWrap:"wrap", justifyContent:"space-between" }}>
                 {DIFFICULTIES.map(d=>{ const locked=!isPremium&&PREMIUM_DIFFICULTIES.includes(d); return <Pill key={d} label={d} color={C.gold} selected={config.difficulty===d} locked={locked} onClick={()=>{ if(!locked) setConfig(c=>({...c,difficulty:d})); }} />; })}
               </div>
               {!isPremium && <div style={{ fontSize:10, color:C.muted, marginTop:8 }}>🔒 Hard &amp; Expert requires <span style={{ color:C.gold, cursor:"pointer" }} onClick={()=>setShowPremiumModal(true)}>Premium</span></div>}
@@ -1078,19 +1078,16 @@ export default function BooHist() {
             <div style={{ display:"flex", gap:20, flexWrap:"wrap" }}>
               <div style={{ flex:1, minWidth:180 }}>
                 <Divider label="Cards" />
-                <div style={{ display:"flex", gap:7, flexWrap:"wrap" }}>
+                <div style={{ display:"flex", gap:8, flexWrap:"wrap", justifyContent:"space-between" }}>
                   {CARD_COUNTS.map(n=><Pill key={n} label={String(n)} color={C.gold} selected={config.cardCount===n} onClick={()=>setConfig(c=>({...c,cardCount:n}))} />)}
                 </div>
               </div>
               <div style={{ flex:1, minWidth:180 }}>
                 <Divider label="Timer" />
-                <div style={{ display:"flex", gap:7, flexWrap:"wrap" }}>
-                  {TIMER_OPTIONS.map(t=><Pill key={t} label={t+"s"} color={C.gold} selected={config.timerSeconds===t} onClick={()=>setConfig(c=>({...c,timerSeconds:t}))} />)}
+                <div style={{ display:"flex", gap:8, flexWrap:"wrap", justifyContent:"space-between" }}>
+                  {TIMER_OPTIONS.map(t=><Pill key={t} label={t>=60?(t/60)+"m":t+"s"} color={C.gold} selected={config.timerSeconds===t} onClick={()=>setConfig(c=>({...c,timerSeconds:t}))} />)}
                 </div>
               </div>
-            </div>
-            <div style={{ padding:"10px 14px", background:C.gold+"08", border:"1px solid "+C.gold+"18", borderRadius:7, fontSize:11, color:C.muted, textAlign:"center" }}>
-              {filteredPool.length} words available · {Math.min(filteredPool.length,config.cardCount)} will be dealt
             </div>
             <button onClick={startCustom} disabled={filteredPool.length===0} style={{ padding:"16px", background:C.gold+"18", border:"1px solid "+C.gold+"77", borderRadius:9, color:C.goldLight, fontSize:13, fontWeight:600, cursor:filteredPool.length?"pointer":"not-allowed", fontFamily:"Georgia,serif", letterSpacing:2, opacity:filteredPool.length?1:0.4 }}>Deal the Cards</button>
             <Footer onHowToPlay={()=>setShowInstructions(true)} onAdminTap={()=>setShowAdmin(true)} />
