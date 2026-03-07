@@ -21,8 +21,8 @@ const SUPPORT = {
   label: "Donate to support free users",
   platform: "Venmo",
   handle: "@fiddyfiddy",
-  url: "https://venmo.com/fiddyfiddy",
-  suggestedAmount: "$25",
+  url: "venmo://paycharge?txn=pay&recipients=fiddyfiddy&amount=25&note=BOOHist",
+  urlFallback: "https://venmo.com/fiddyfiddy",
 };
 
 // ─── PREMIUM CONFIG ───────────────────────────────────────────────────────────
@@ -34,6 +34,9 @@ const ADMIN_TAP_COUNT = 5;
 // ─────────────────────────────────────────────────────────────────────────────
 import { useState, useEffect, useRef, useCallback } from "react";
 import SEED_WORDS from './SEED_WORDS_BAKED.js';
+import SEED_WORDS_EVERYDAY from './SEED_WORDS_EVERYDAY.js';
+import SEED_WORDS_SCIENCE from './SEED_WORDS_SCIENCE.js';
+const ALL_WORDS = [...SEED_WORDS, ...SEED_WORDS_EVERYDAY, ...SEED_WORDS_SCIENCE];
 // ─────────────────────────────────────────────────────────────────────────────
 // DUAL STORAGE — tries window.storage (Claude artifact), falls back to
 // localStorage (Vercel deployment). Same API either way.
@@ -187,19 +190,15 @@ async function updatePremiumStatus(fingerprint, status) {
 // CONSTANTS
 // ─────────────────────────────────────────────────────────────────────────────
 const ERAS = [
-  "All Time","Prehistoric","Ancient Civilizations","Classical Antiquity",
+  "All Time","Ancient Civilizations","Classical Antiquity",
   "Late Antiquity","Medieval Period","The Renaissance","Age of Exploration",
   "The Enlightenment","Industrial Revolution","Modern Era","Postwar Era","Digital Age",
 ];
-const CATEGORIES = [
-  "History","Science","Art","Music","Sports","Politics",
-  "Literature","Finance","Technology","Film & TV","Geography",
-  "Philosophy","Architecture","Fashion","Math",
-];
-const DIFFICULTIES = ["All","Easy","Medium","Hard","Expert"];
+const CATEGORIES = ["History","Science","Everyday"];
+const DIFFICULTIES = ["All","Easy","Medium","PRO"];
 const TIMER_OPTIONS = [30,60,120,240,480,960];
 const CARD_COUNTS = [3,5,8,10,15];
-const PREMIUM_DIFFICULTIES = ["Hard","Expert"];
+const PREMIUM_DIFFICULTIES = ["PRO"];
 
 const ERA_COLORS = {
   "Prehistoric":"#9C7A4A","Ancient Civilizations":"#C17D3C","Classical Antiquity":"#8B7BAA",
@@ -241,7 +240,13 @@ function seededRng(seed) {
   return () => { h ^= h >>> 16; h = Math.imul(h, 0x45d9f3b); h ^= h >>> 16; return (h >>> 0) / 0xffffffff; };
 }
 function getDailyPool() {
-  const rng = seededRng(getDailyDateStr());
+  // Today's 10 — draws from all domains
+  const rng = seededRng(getDailyDateStr() + "-all");
+  return [...ALL_WORDS].sort(() => rng() - 0.5).slice(0, 10);
+}
+function getHistoryDailyPool() {
+  // History 10 — draws from history bank only
+  const rng = seededRng(getDailyDateStr() + "-history");
   return [...SEED_WORDS].sort(() => rng() - 0.5).slice(0, 10);
 }
 
@@ -289,8 +294,8 @@ function scoreDecoy(target, candidate) {
   if (inferType(target.word) === inferType(candidate.word)) score += 8;
 
   // #5 — specific era match (exclude "All Time" from both sides)
-  const targetEras = target.eras.filter(e => e !== "All Time");
-  const candidateEras = candidate.eras.filter(e => e !== "All Time");
+  const targetEras = (target.eras||[]).filter(e => e !== "All Time");
+  const candidateEras = (candidate.eras||[]).filter(e => e !== "All Time");
   const eraMatch = targetEras.some(e => candidateEras.includes(e));
   if (eraMatch) score += 6;
   // adjacent eras also get partial credit
@@ -397,13 +402,11 @@ function SponsorOrQuote({ quote }) {
 }
 
 function SupportBlock() {
+  const href = SUPPORT.url;
   return (
     <div style={{ width:"100%", padding:"22px 24px", textAlign:"center", background:C.surface, border:"1px solid "+C.border, borderRadius:10, margin:"12px 0" }}>
-      <div style={{ fontSize:9, letterSpacing:4, color:C.muted, textTransform:"uppercase", fontFamily:"Georgia,serif", marginBottom:8 }}>{SUPPORT.label}</div>
-      <div style={{ fontSize:11, color:C.muted, fontFamily:"Georgia,serif", lineHeight:1.7, marginBottom:16 }}>
-        Suggested donation {SUPPORT.suggestedAmount}
-      </div>
-      <a href={SUPPORT.url} target="_blank" rel="noopener noreferrer" style={{ display:"inline-flex", alignItems:"center", gap:8, padding:"10px 22px", background:C.blue+"18", border:"1px solid "+C.blue+"77", borderRadius:8, color:"#6BC5F0", fontSize:12, fontWeight:600, fontFamily:"Georgia,serif", letterSpacing:0.5, textDecoration:"none" }}>
+      <div style={{ fontSize:9, letterSpacing:4, color:C.muted, textTransform:"uppercase", fontFamily:"Georgia,serif", marginBottom:16 }}>{SUPPORT.label}</div>
+      <a href={href} target="_blank" rel="noopener noreferrer" style={{ display:"inline-flex", alignItems:"center", gap:8, padding:"10px 22px", background:C.blue+"18", border:"1px solid "+C.blue+"77", borderRadius:8, color:"#6BC5F0", fontSize:12, fontWeight:600, fontFamily:"Georgia,serif", letterSpacing:0.5, textDecoration:"none" }}>
         {SUPPORT.platform} · {SUPPORT.handle}
       </a>
     </div>
@@ -415,7 +418,7 @@ function PremiumBlock({ onUpgrade }) {
     <div style={{ width:"100%", padding:"22px 24px", textAlign:"center", background:C.goldDim, border:"1px solid "+C.gold+"33", borderRadius:10, margin:"20px 0" }}>
       <div style={{ fontSize:10, color:C.gold, letterSpacing:3, fontFamily:"Georgia,serif", marginBottom:10 }}>★ PREMIUM</div>
       <div style={{ fontSize:11, color:C.muted, fontFamily:"Georgia,serif", lineHeight:1.8, marginBottom:16 }}>
-        Unlock Hard &amp; Expert cards.<br />Remove ads. Get printable game sheets.
+        Unlock PRO cards.<br />Remove ads. Get printable game sheets.
       </div>
       <button onClick={onUpgrade} style={{ padding:"10px 28px", background:C.gold+"22", border:"1px solid "+C.gold, borderRadius:8, color:C.goldLight, fontSize:12, fontWeight:600, cursor:"pointer", fontFamily:"Georgia,serif", letterSpacing:1 }}>
         Upgrade to Premium
@@ -549,7 +552,7 @@ function PremiumModal({ fingerprint, onClose, onSuccess }) {
         <div style={{ height:2, background:"linear-gradient(90deg,transparent,"+C.gold+",transparent)", marginBottom:24, borderRadius:1 }} />
         <div style={{ fontSize:10, letterSpacing:4, color:C.gold, textAlign:"center", marginBottom:8, fontFamily:"Georgia,serif", textTransform:"uppercase" }}>★ Upgrade to Premium</div>
         <div style={{ fontSize:11, color:C.muted, textAlign:"center", fontFamily:"Georgia,serif", lineHeight:1.7, marginBottom:24 }}>
-          Unlock Hard &amp; Expert cards, remove ads, and get printable game sheets.<br />
+          Unlock PRO cards, remove ads, and get printable game sheets.<br />
           Leave your details and we'll be in touch.
         </div>
 
@@ -791,18 +794,11 @@ function CustomCard({ card, onGot, onSkip, timerPct, urgent, cardNum, total, hig
       <div style={{ background:C.surface, border:"1px solid "+C.border, borderRadius:14, overflow:"hidden", boxShadow:"0 16px 48px rgba(0,0,0,0.7)" }}>
         <div style={{ height:2, background:"linear-gradient(90deg,transparent,"+C.gold+",transparent)" }} />
         <div style={{ background:"linear-gradient(160deg,#171427,#0F0D1A)", padding:"28px 24px 20px", borderBottom:"1px solid "+C.dim, textAlign:"center" }}>
-          <div style={{ fontSize:9, letterSpacing:4, color:C.gold, opacity:0.55, fontFamily:"Georgia,serif", marginBottom:10, textTransform:"uppercase" }}>Describe This</div>
           <div style={{ fontSize:card.word.length>22?26:card.word.length>14?34:42, fontWeight:700, color:C.cream, fontFamily:"Georgia,'Times New Roman',serif", letterSpacing:1, lineHeight:1.15 }}>{card.word}</div>
-          <div style={{ marginTop:10, display:"flex", gap:5, justifyContent:"center", flexWrap:"wrap" }}>
-            {card.eras.filter(e=>e!=="All Time").slice(0,2).map(e=>(
-              <span key={e} style={{ fontSize:8, padding:"2px 8px", borderRadius:3, background:(ERA_COLORS[e]||C.gold)+"22", border:"1px solid "+(ERA_COLORS[e]||C.gold)+"44", color:ERA_COLORS[e]||C.gold, fontFamily:"Georgia,serif", letterSpacing:1 }}>{e}</span>
-            ))}
-          </div>
         </div>
         <div style={{ padding:"16px 20px 22px" }}>
-          <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:4 }}>
-            <div style={{ fontSize:8, letterSpacing:3, color:C.red, opacity:0.7, fontFamily:"Georgia,serif", textTransform:"uppercase" }}>BOOwords</div>
-            <div style={{ fontSize:9, color:C.gold, fontFamily:"Georgia,serif", fontStyle:"italic" }}>Tap to use as hint</div>
+          <div style={{ textAlign:"center", marginBottom:10 }}>
+            <div style={{ fontSize:12, color:C.gold, fontFamily:"Georgia,serif", fontStyle:"italic", letterSpacing:0.5 }}>Tap a word to use as a hint</div>
           </div>
           {card.booWords ? (
             <div style={{ display:"flex", flexDirection:"column", gap:6 }}>
@@ -829,7 +825,7 @@ function CustomCard({ card, onGot, onSkip, timerPct, urgent, cardNum, total, hig
         <button onClick={onHowToPlay} style={{ background:"transparent", border:"none", color:C.muted, fontSize:10, cursor:"pointer", fontFamily:"Georgia,serif", letterSpacing:1, textDecoration:"underline" }}>How to Play</button>
       </div>
       <div style={{ display:"flex", gap:8, marginTop:8 }}>
-        <button onClick={onSkip} style={{ flex:1, padding:"13px 8px", background:"transparent", border:"1px solid "+C.dim, borderRadius:9, color:C.muted, fontSize:11, cursor:"pointer", fontFamily:"Georgia,serif", transition:"all 0.15s" }}>Skip</button>
+        <button onClick={onSkip} style={{ flex:1, padding:"13px 8px", background:C.red+"18", border:"1px solid "+C.red+"55", borderRadius:9, color:"#E88880", fontSize:11, cursor:"pointer", fontFamily:"Georgia,serif", transition:"all 0.15s" }}>Skip</button>
         <button onClick={onGot} style={{ flex:2, padding:"13px 8px", background:C.green+"18", border:"1px solid "+C.green+"55", borderRadius:9, color:C.greenLight, fontSize:11, cursor:"pointer", fontFamily:"Georgia,serif", boxShadow:"0 0 16px "+C.green+"1A" }}>✓ Got It</button>
       </div>
     </div>
@@ -870,7 +866,7 @@ export default function BooHist() {
   const [loadingState, setLoadingState] = useState({done:0,total:0});
 
   const timerRef = useRef(null);
-  const diffRank = {Easy:0,Medium:1,Hard:2,Expert:3};
+  const diffRank = {Easy:0,Medium:1,PRO:2};
   const [quote] = useState(()=>QUOTES[Math.floor(Math.random()*QUOTES.length)]);
 
   // Init fingerprint and check premium on mount
@@ -882,9 +878,9 @@ export default function BooHist() {
     });
   },[]);
 
-  const filteredPool = SEED_WORDS.filter(w=>{
+  const filteredPool = ALL_WORDS.filter(w=>{
     const catOk = config.categories.includes("All") || w.categories.some(c=>config.categories.includes(c));
-    const eraOk = w.eras.some(e=>config.eras.includes(e));
+    const eraOk = !w.categories?.includes("History") || (w.eras||[]).some(e=>config.eras.includes(e));
     const diffOk = config.difficulty==="All" || (diffRank[w.difficulty]||0)<=(diffRank[config.difficulty]||0);
     const premOk = isPremium || !PREMIUM_DIFFICULTIES.includes(w.difficulty);
     return catOk&&eraOk&&diffOk&&premOk;
@@ -906,13 +902,14 @@ export default function BooHist() {
     setHintEliminatedIdx(null); setHighlightedBooIdx(null);
     setTimer(timerSecs); setStarted(false); setStartTime(null); setEndTime(null);
     if(gameMode==="daily"&&built.length>0){
-      const decoys = pickDecoys(built[0],SEED_WORDS);
+      const decoys = pickDecoys(built[0],ALL_WORDS);
       setChoices([built[0].word,...decoys].sort(()=>Math.random()-0.5));
     }
     setScreen("game");
   },[config]);
 
   const startDaily = () => { setMode("daily"); buildDeck(getDailyPool(),"daily"); };
+  const startHistoryDaily = () => { setMode("daily"); buildDeck(getHistoryDailyPool(),"daily"); };
   const startCustom = useCallback(() => {
     setMode("custom");
     const pool = [...filteredPool].sort(()=>Math.random()-0.5).slice(0,config.cardCount);
@@ -965,7 +962,7 @@ export default function BooHist() {
     else {
       setCardIdx(next); setHintEliminatedIdx(null); setHighlightedBooIdx(null);
       if(mode==="daily"){
-        const decoys = pickDecoys(deck[next],SEED_WORDS);
+        const decoys = pickDecoys(deck[next],ALL_WORDS);
         setChoices([deck[next].word,...decoys].sort(()=>Math.random()-0.5));
       }
     }
@@ -1009,8 +1006,11 @@ export default function BooHist() {
             </div>
           ) : (
             <>
-              <div style={{ fontSize:46, fontWeight:700, lineHeight:1, letterSpacing:4 }}>
-                <span style={{ color:C.gold }}>BOO</span><span style={{ color:C.cream }}>Hist</span>
+              <div style={{ display:"flex", alignItems:"center", justifyContent:"center", gap:14 }}>
+                <div style={{ fontSize:46, fontWeight:700, lineHeight:1, letterSpacing:4 }}>
+                  <span style={{ color:C.gold }}>BOO</span><span style={{ color:C.cream }}>Hist</span>
+                </div>
+                <button onClick={()=>setShowInstructions(true)} style={{ width:28, height:28, borderRadius:"50%", border:"1px solid "+C.gold+"66", background:C.gold+"18", color:C.gold, fontSize:14, fontWeight:700, cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", fontFamily:"Georgia,serif", flexShrink:0, marginTop:4 }}>?</button>
               </div>
               {isPremium && <div style={{ fontSize:9, color:C.greenLight, letterSpacing:3, marginTop:8, fontFamily:"Georgia,serif" }}>★ PREMIUM</div>}
             </>
@@ -1033,6 +1033,18 @@ export default function BooHist() {
                 <div style={{ fontSize:22, opacity:0.5, marginLeft:12 }}>→</div>
               </div>
             </button>
+            <button onClick={startHistoryDaily} style={{ width:"100%", padding:"22px 24px", background:C.surface, border:"1px solid "+C.border, borderRadius:12, cursor:"pointer", textAlign:"left", transition:"all 0.15s" }}
+              onMouseEnter={e=>{e.currentTarget.style.borderColor=C.muted;}}
+              onMouseLeave={e=>{e.currentTarget.style.borderColor=C.border;}}>
+              <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start" }}>
+                <div>
+                  <div style={{ fontSize:9, letterSpacing:4, color:C.muted, textTransform:"uppercase", marginBottom:8 }}>History Only</div>
+                  <div style={{ fontSize:20, fontWeight:700, color:C.cream }}>History 10</div>
+                  <div style={{ fontSize:11, color:C.muted, marginTop:6, lineHeight:1.6 }}>History cards only. Same deck for everyone.<br />Resets at midnight.</div>
+                </div>
+                <div style={{ fontSize:22, opacity:0.3, marginLeft:12 }}>→</div>
+              </div>
+            </button>
             <button onClick={()=>setScreen("config")} style={{ width:"100%", padding:"22px 24px", background:C.surface, border:"1px solid "+C.border, borderRadius:12, cursor:"pointer", textAlign:"left", transition:"all 0.15s" }}
               onMouseEnter={e=>{e.currentTarget.style.borderColor=C.muted;}}
               onMouseLeave={e=>{e.currentTarget.style.borderColor=C.border;}}>
@@ -1045,6 +1057,7 @@ export default function BooHist() {
               </div>
             </button>
             <SupportBlock />
+            <button onClick={()=>setShowInstructions(true)} style={{ width:"100%", padding:"12px", background:"transparent", border:"1px solid "+C.dim, borderRadius:9, color:C.muted, fontSize:11, cursor:"pointer", fontFamily:"Georgia,serif", letterSpacing:2, textTransform:"uppercase" }}>How to Play</button>
             {!isPremium && <PremiumBlock onUpgrade={()=>setShowPremiumModal(true)} />}
             <Footer onHowToPlay={()=>setShowInstructions(true)} onAdminTap={()=>setShowAdmin(true)} />
           </div>
@@ -1054,12 +1067,14 @@ export default function BooHist() {
         {screen==="config" && (
           <div style={{ width:"100%", display:"flex", flexDirection:"column", gap:22, animation:"fadeUp 0.4s ease" }}>
             <button onClick={()=>setScreen("home")} style={{ alignSelf:"flex-start", padding:"4px 12px", background:"transparent", border:"1px solid "+C.dim, borderRadius:20, color:C.muted, fontSize:10, cursor:"pointer", fontFamily:"Georgia,serif" }}>← Back</button>
-            <div>
-              <Divider label="Historical Era" />
-              <div style={{ display:"flex", flexWrap:"wrap", gap:7 }}>
-                {ERAS.map(era=><Pill key={era} label={era} color={ERA_COLORS[era]||C.gold} selected={config.eras.includes(era)} onClick={()=>setConfig(c=>({...c,eras:ensure(c.eras,era,toggle(c.eras,era))}))} />)}
+            {config.categories.includes("History") && (
+              <div>
+                <Divider label="Historical Era" />
+                <div style={{ display:"flex", flexWrap:"wrap", gap:7 }}>
+                  {ERAS.map(era=><Pill key={era} label={era} color={ERA_COLORS[era]||C.gold} selected={config.eras.includes(era)} onClick={()=>setConfig(c=>({...c,eras:ensure(c.eras,era,toggle(c.eras,era))}))} />)}
+                </div>
               </div>
-            </div>
+            )}
             <div>
               <Divider label="Category" />
               <div style={{ display:"flex", flexWrap:"wrap", gap:7 }}>
@@ -1073,7 +1088,7 @@ export default function BooHist() {
               <div style={{ display:"flex", gap:8, flexWrap:"wrap", justifyContent:"space-between" }}>
                 {DIFFICULTIES.map(d=>{ const locked=!isPremium&&PREMIUM_DIFFICULTIES.includes(d); return <Pill key={d} label={d} color={C.gold} selected={config.difficulty===d} locked={locked} onClick={()=>{ if(!locked) setConfig(c=>({...c,difficulty:d})); }} />; })}
               </div>
-              {!isPremium && <div style={{ fontSize:10, color:C.muted, marginTop:8 }}>🔒 Hard &amp; Expert requires <span style={{ color:C.gold, cursor:"pointer" }} onClick={()=>setShowPremiumModal(true)}>Premium</span></div>}
+              {!isPremium && <div style={{ fontSize:10, color:C.muted, marginTop:8 }}>🔒 PRO requires <span style={{ color:C.gold, cursor:"pointer" }} onClick={()=>setShowPremiumModal(true)}>Premium</span></div>}
             </div>
             <div style={{ display:"flex", gap:20, flexWrap:"wrap" }}>
               <div style={{ flex:1, minWidth:180 }}>
