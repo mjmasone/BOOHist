@@ -362,7 +362,7 @@ async function cacheBooWords(word, booWords) {
 }
 
 function fetchBooWords(word) {
-  const entry = SEED_WORDS.find(s => s.word === word);
+  const entry = ALL_WORDS.find(s => s.word === word);
   return entry?.booWords || ["related","connected","associated","linked","known","famous"];
 }
 
